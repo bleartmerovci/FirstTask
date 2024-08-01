@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { modifyUserRole, deleteProduct } = require('../controllers/adminController');
+const { getAllUsers, updateUser, deleteUser } = require('../controllers/adminController');
 const auth = require('../middleware/auth');
 const role = require('../middleware/role');
 
-router.put('/user/:id/role', auth, role(['admin']), modifyUserRole);
-router.delete('/product/:id', auth, role(['admin']), deleteProduct);
+// Route to get all users (Admin Only)
+router.get('/users', auth, role(['admin']), getAllUsers);
+
+// Additional routes for updating and deleting users
+router.put('/users/:id', auth, role(['admin']), updateUser);
+router.delete('/users/:id', auth, role(['admin']), deleteUser);
 
 module.exports = router;

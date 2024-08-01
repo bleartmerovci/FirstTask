@@ -1,19 +1,60 @@
 const User = require('../models/User');
-const Product = require('../models/Product');
 
-const modifyUserRole = async (req, res) => {
-    const { id } = req.params;
-    const { role } = req.body;
-    const user = await User.findByPk(id);
-    await user.update({ role });
-    res.json(user);
+// Function to get all users (Admin Only)
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.findAll({
+            attributes: { exclude: ['password'] }  // Exclude sensitive fields like password
+        });
+        res.status(200).json(users);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 };
 
-const deleteProduct = async (req, res) => {
-    const { id } = req.params;
-    const product = await Product.findByPk(id);
-    await product.destroy();
-    res.status(204).send();
+// Function to update a user (Admin Only)
+const updateUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { username, email, role } = req.body;
+
+        const user = await User.findByPk(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        user.username = username || user.username;
+        user.email = email || user.email;
+        user.role = role || user.role;
+
+        await user.save();
+        res.status(200).json(user);
+    } catch (error) {
+        console.error('Error updating user:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 };
 
-module.exports = { modifyUserRole, deleteProduct };
+// Function to delete a user (Admin Only)
+const deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findByPk(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        await user.destroy();
+        res.status(204).json({ message: 'User deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+module.exports = {
+    getAllUsers,
+    updateUser,
+    deleteUser
+};
